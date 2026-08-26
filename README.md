@@ -19,6 +19,48 @@ To repozytorium zawiera **kod aplikacji i pipeline'y generujące treść**. Same
 - **Backend/dane**: Supabase (Postgres + Auth + Row Level Security)
 - **Content pipeline**: Node.js (`.mjs`) i Python — parsowanie PDF-ów, plików Anki (`.apkg`), dumpów CSV/DOCX z sesji egzaminacyjnych do jednolitego formatu pytań
 
+## Architektura
+
+Pełny opis decyzji projektowych w [ARCHITECTURE.md](ARCHITECTURE.md). Skrót w diagramie:
+
+```mermaid
+flowchart LR
+    subgraph Zrodla["Materialy zrodlowe"]
+        PDF["PDF / .apkg / CSV<br/>skrypty, talie Anki, dumpy z sesji"]
+    end
+
+    subgraph Pipeline["Content pipeline (Python / Node)"]
+        BUILD["_build*.py, *_build*.mjs<br/>ekstrakcja + walidacja + deterministyczne ID"]
+    end
+
+    subgraph Dane["Warstwa danych"]
+        META[("meta.json<br/>metadane + obrazki, jawne, Netlify")]
+        QDB[("Supabase: questions<br/>tresc pytan, RLS: tylko zalogowani")]
+    end
+
+    subgraph Frontend
+        IDX["index.html<br/>quiz / fiszki / plan nauki"]
+        CONTENT["content.js<br/>leniwe dogrywanie tresci"]
+        AUTH["auth.js<br/>Supabase Auth"]
+    end
+
+    subgraph Backend["Supabase (Postgres + RLS)"]
+        PROF[("profiles")]
+        PROG[("progress / activity")]
+        FLASH[("flashcards - Leitner")]
+        CYCLE[("cycle_progress")]
+    end
+
+    PDF --> BUILD --> META
+    BUILD --> QDB
+    META --> IDX
+    IDX --> CONTENT --> QDB
+    IDX --> AUTH --> PROF
+    IDX --> PROG
+    IDX --> FLASH
+    IDX --> CYCLE
+```
+
 ## Struktura repozytorium
 
 ```
