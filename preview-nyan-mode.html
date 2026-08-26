@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Podgląd: Tryb kolorowy vs Tryb cichy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  @font-face {
+    font-family: 'Lato';
+    src: local('Lato'), local('LatoWeb');
+  }
+  :root{
+    --purple:#673AB7;
+    --purple2:#6c5ce7;
+    --pink:#d860c4;
+    --text:#2a2242;
+    --muted:#78728f;
+    --bg-light:#f3f1f9;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0;
+    font-family:'Lato','Segoe UI',Arial,sans-serif;
+    background:#e2dee9;
+    color:var(--text);
+  }
+  .note{
+    max-width:900px;
+    margin:22px auto 0;
+    padding:14px 18px;
+    background:#fff8e1;
+    border:1px solid #f1dfa3;
+    border-radius:10px;
+    font-size:14px;
+    color:#6b5a1a;
+  }
+  .frame{
+    max-width:1280px;
+    margin:22px auto 60px;
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 20px 50px rgba(20,15,40,.25);
+    background:#fff;
+  }
+  /* ---------- header ---------- */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 32px;
+    background:#fff;
+    border-bottom:2px solid #e6e2f0;
+    position:relative;
+    z-index:5;
+  }
+  .brand{ display:flex; align-items:center; gap:14px; }
+  .brand img{ height:30px; display:block; }
+  .crumbs{ font-size:14px; color:var(--muted); font-weight:600; }
+  .mode-box{ text-align:right; }
+  .mode-caption{ font-size:11px; color:var(--muted); margin-bottom:6px; letter-spacing:.02em; }
+  .toggle{
+    display:inline-flex;
+    background:#eae6f4;
+    border-radius:20px;
+    padding:3px;
+    cursor:pointer;
+    user-select:none;
+    width:220px;
+  }
+  .toggle .opt{
+    flex:1;
+    text-align:center;
+    padding:9px 0;
+    font-size:14px;
+    font-weight:700;
+    border-radius:17px;
+    color:var(--muted);
+    transition:color .25s;
+    position:relative;
+    z-index:2;
+  }
+  .toggle .knob{
+    position:absolute;
+    top:3px; left:3px;
+    width:calc(50% - 3px);
+    height:calc(100% - 6px);
+    background:var(--purple2);
+    border-radius:17px;
+    transition:transform .28s cubic-bezier(.4,0,.2,1);
+    z-index:1;
+  }
+  .toggle{ position:relative; }
+  body.colorful .toggle .knob{ transform:translateX(100%); }
+  body.colorful .toggle .opt.right{ color:#fff; }
+  body:not(.colorful) .toggle .opt.left{ color:#fff; }
+
+  /* ---------- stage ---------- */
+  .stage{
+    position:relative;
+    min-height:720px;
+    overflow:hidden;
+    background:var(--bg-light);
+    transition:background .4s;
+  }
+  body.colorful .stage{ background:#100826; }
+
+  .sky{
+    position:absolute; inset:0;
+    opacity:0;
+    transition:opacity .5s;
+    pointer-events:none;
+  }
+  body.colorful .sky{ opacity:1; }
+
+  .stars{
+    position:absolute; inset:0;
+    background-image:
+      radial-gradient(2px 2px at 10% 20%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 30% 65%, #fff, transparent),
+      radial-gradient(2px 2px at 50% 15%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 70% 40%, #fff, transparent),
+      radial-gradient(2px 2px at 85% 75%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 15% 85%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 92% 25%, #fff, transparent),
+      radial-gradient(2px 2px at 40% 90%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 60% 55%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 25% 40%, #fff, transparent);
+    background-repeat:no-repeat;
+    opacity:.8;
+  }
+
+  .trail{
+    position:absolute;
+    left:0; right:0;
+    height:130px;
+    background:repeating-linear-gradient(90deg,
+      #ff6384 0 60px,
+      #ffb254 60px 120px,
+      #ffee78 120px 180px,
+      #8ce096 180px 240px,
+      #6eb4f0 240px 300px,
+      #b080eb 300px 360px);
+    background-size:360px 100%;
+    animation:scroll 3.2s linear infinite;
+    filter:drop-shadow(0 0 18px rgba(255,255,255,.15));
+  }
+  .trail.trail2{
+    height:70px;
+    opacity:.35;
+    animation-duration:5s;
+    animation-direction:reverse;
+  }
+  @keyframes scroll{
+    from{ background-position-x:0; }
+    to{ background-position-x:-360px; }
+  }
+
+  .nyan{
+    position:absolute;
+    right:6%;
+    width:220px;
+    image-rendering:pixelated;
+    animation:bob 2.6s ease-in-out infinite;
+    filter:drop-shadow(0 10px 18px rgba(0,0,0,.4));
+  }
+  @keyframes bob{
+    0%,100%{ transform:translateY(0) rotate(0deg); }
+    50%{ transform:translateY(-14px) rotate(-1.5deg); }
+  }
+
+  .scrim{
+    position:absolute; inset:0;
+    background:rgba(8,6,18,.42);
+  }
+
+  /* ---------- flashcard ---------- */
+  .content{
+    position:relative;
+    z-index:4;
+    padding:40px 32px 60px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .progress-label{
+    font-size:14px;
+    font-weight:700;
+    margin-bottom:10px;
+    color:var(--muted);
+    transition:color .3s;
+  }
+  body.colorful .progress-label{ color:#e4dcf5; }
+  .progress-bar{
+    width:420px;
+    max-width:90%;
+    height:6px;
+    border-radius:3px;
+    background:#e2dcf0;
+    overflow:hidden;
+    margin-bottom:34px;
+  }
+  body.colorful .progress-bar{ background:rgba(255,255,255,.25); }
+  .progress-fill{
+    height:100%;
+    background:linear-gradient(90deg,var(--purple2),var(--pink));
+    border-radius:3px;
+    transition:width .35s;
+  }
+
+  .card{
+    width:760px;
+    max-width:94%;
+    background:#fff;
+    border-radius:26px;
+    box-shadow:0 18px 40px rgba(20,15,40,.18);
+    padding:34px 46px 30px;
+    text-align:center;
+    cursor:pointer;
+    transition:transform .15s, box-shadow .3s;
+  }
+  body.colorful .card{ box-shadow:0 26px 60px rgba(0,0,0,.55); }
+  .card:hover{ transform:translateY(-2px); }
+  .badge{
+    display:inline-block;
+    background:#eee9fb;
+    color:var(--purple);
+    font-weight:700;
+    font-size:13px;
+    padding:8px 18px;
+    border-radius:20px;
+    margin-bottom:22px;
+  }
+  .q{
+    font-size:22px;
+    font-weight:700;
+    line-height:1.5;
+    min-height:100px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .a{
+    font-size:17px;
+    line-height:1.6;
+    color:#4b4166;
+    min-height:100px;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:0 10px;
+  }
+  .card.flipped .q{ display:none; }
+  .card.flipped .a{ display:flex; }
+  .hint{
+    font-size:13px;
+    color:var(--muted);
+    border-top:2px solid #eee9f5;
+    margin-top:18px;
+    padding-top:16px;
+  }
+  .flip-icon{
+    width:44px; height:44px;
+    border-radius:50%;
+    background:#eee9fb;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:14px auto 0;
+    font-size:18px;
+    color:var(--purple);
+  }
+
+  .ratings{
+    display:flex;
+    gap:20px;
+    margin-top:30px;
+  }
+  .ratings button{
+    font-family:inherit;
+    font-weight:700;
+    font-size:17px;
+    padding:14px 30px;
+    border-radius:14px;
+    border:none;
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(20,15,40,.12);
+    transition:transform .12s;
+  }
+  .ratings button:hover{ transform:translateY(-2px); }
+  .ratings button:active{ transform:translateY(0); }
+  .r-hard{ background:#fde2e2; color:#d32f2f; }
+  .r-mid{ background:#fff4db; color:#c68012; }
+  .r-easy{ background:#def5e0; color:#2e8b3a; }
+
+  .caption{
+    position:absolute;
+    left:24px; bottom:20px;
+    background:rgba(0,0,0,.45);
+    color:#ece6fa;
+    font-size:13px;
+    padding:10px 16px;
+    border-radius:12px;
+    opacity:0;
+    transition:opacity .4s;
+    z-index:4;
+  }
+  body.colorful .caption{ opacity:1; }
+</style>
+</head>
+<body>
+
+<div class="note">
+  Lokalny, klikalny prototyp do porównania <b>Trybu cichego</b> i <b>Trybu kolorowego</b> — nic w prawdziwej stronie
+  (<code>index.html</code>) nie zostało zmienione. Kliknij przełącznik w prawym górnym rogu, kliknij kartę żeby
+  odsłonić odpowiedź, kliknij ocenę żeby przejść do kolejnej fiszki.
+</div>
+
+<div class="frame">
+  <header>
+    <div class="brand">
+      <img src="brand-assets/only-cats-logo.png" alt="OnlyCats logo">
+      <span class="crumbs" id="crumbs">Mikrobiologia › Clostridium perfringens</span>
+    </div>
+    <div class="mode-box">
+      <div class="mode-caption">Tryb nauki</div>
+      <div class="toggle" id="toggle">
+        <div class="knob"></div>
+        <div class="opt left">Cichy</div>
+        <div class="opt right">Kolorowy</div>
+      </div>
+    </div>
+  </header>
+
+  <div class="stage">
+    <div class="sky">
+      <div class="stars"></div>
+      <div class="trail"></div>
+      <div class="trail trail2" style="top:60%"></div>
+      <img class="nyan" src="brand-assets/nyan-cat.gif" alt="Nyan Cat" style="top:18%">
+      <div class="scrim"></div>
+    </div>
+
+    <div class="content">
+      <div class="progress-label" id="progress-label">Karta 1 / 6</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:16%"></div></div>
+
+      <div class="card" id="card">
+        <div class="badge" id="badge">Leitner · pudełko 3</div>
+        <div class="q" id="q-text"></div>
+        <div class="a" id="a-text"></div>
+        <div class="hint" id="hint">kliknij, aby odsłonić odpowiedź</div>
+        <div class="flip-icon">⟲</div>
+      </div>
+
+      <div class="ratings">
+        <button class="r-hard" onclick="next()">Trudne</button>
+        <button class="r-mid" onclick="next()">Średnie</button>
+        <button class="r-easy" onclick="next()">Łatwe</button>
+      </div>
+    </div>
+
+    <div class="caption">Tło rusza się cały czas w tle — Ty w tym czasie czytasz.</div>
+  </div>
+</div>
+
+<script>
+  const cards = [
+    { crumb: "Mikrobiologia › Clostridium perfringens", box: "Leitner · pudełko 3",
+      q: "Jakie egzotoksyny wytwarza Clostridium perfringens i jakie zmiany kliniczne za nie odpowiadają?",
+      a: "Toksyna alfa (lecytynaza) — martwica tkanek w zgorzeli gazowej. Toksyna beta, epsilon, iota — odpowiadają za enterotoksemie u zwierząt; enterotoksyna CPE — zatrucia pokarmowe u ludzi." },
+    { crumb: "Farmakologia › Antybiotyki beta-laktamowe", box: "Leitner · pudełko 2",
+      q: "Który mechanizm odpowiada za oporność MRSA na metycylinę?",
+      a: "Zmieniona struktura białka PBP2a kodowanego przez gen mecA — niskie powinowactwo do beta-laktamów sprawia, że cała ta klasa antybiotyków przestaje działać." },
+    { crumb: "Fizjopatologia › Gospodarka kwasowo-zasadowa", box: "Leitner · pudełko 1",
+      q: "Jak nazywa się zaburzenie z pH < 7,35, pCO2 > 45 mmHg i prawidłowym/podwyższonym HCO3-?",
+      a: "Kwasica oddechowa niewyrównana (ostra) — nerki nie zdążyły jeszcze skompensować retencji CO2 wzrostem wchłaniania HCO3-." },
+    { crumb: "Anatomia › Splot ramienny", box: "Leitner · pudełko 4",
+      q: "Które nerwy odchodzą bezpośrednio od pęczka tylnego splotu ramiennego?",
+      a: "Nerw pachowy i nerw promieniowy — pęczek tylny unerwia głównie mięśnie prostowniki kończyny górnej." },
+    { crumb: "Biochemia › Cykl mocznikowy", box: "Leitner · pudełko 2",
+      q: "W którym organellum zachodzą pierwsze dwie reakcje cyklu mocznikowego?",
+      a: "W mitochondrium — synteza karbamoilofosforanu i cytruliny, dalsze etapy (od argininobursztynianu) zachodzą już w cytozolu." },
+    { crumb: "Immunologia › Nadwrażliwość", box: "Leitner · pudełko 3",
+      q: "Jaki typ nadwrażliwości wg Gella i Coombsa reprezentuje wstrząs anafilaktyczny?",
+      a: "Typ I — nadwrażliwość natychmiastowa, IgE-zależna degranulacja mastocytów i bazofilów po ponownym kontakcie z alergenem." },
+  ];
+
+  let i = 0;
+
+  function render(){
+    const c = cards[i];
+    document.getElementById('crumbs').textContent = c.crumb;
+    document.getElementById('badge').textContent = c.box;
+    document.getElementById('q-text').textContent = c.q;
+    document.getElementById('a-text').textContent = c.a;
+    document.getElementById('progress-label').textContent = `Karta ${i+1} / ${cards.length}`;
+    document.getElementById('progress-fill').style.width = `${((i+1)/cards.length)*100}%`;
+    document.getElementById('card').classList.remove('flipped');
+    document.getElementById('hint').textContent = 'kliknij, aby odsłonić odpowiedź';
+  }
+
+  function next(){
+    i = (i + 1) % cards.length;
+    render();
+  }
+
+  document.getElementById('card').addEventListener('click', () => {
+    const card = document.getElementById('card');
+    card.classList.toggle('flipped');
+    document.getElementById('hint').textContent = card.classList.contains('flipped')
+      ? 'kliknij, aby wrócić do pytania' : 'kliknij, aby odsłonić odpowiedź';
+  });
+
+  document.getElementById('toggle').addEventListener('click', () => {
+    document.body.classList.toggle('colorful');
+  });
+
+  render();
+</script>
+
+</body>
+</html>

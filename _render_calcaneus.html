@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>render</title>
+<style>html,body{margin:0;background:#2a2a2a}</style>
+</head><body>
+<div id="status">loading...</div>
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+}
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OBJLoader } from "three/addons/loaders/OBJLoader.js";
+
+const W = 480, H = 360;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x2a2a2a);
+const camera = new THREE.PerspectiveCamera(35, W/H, 0.1, 5000);
+camera.up.set(0,0,1);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H);
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.7));
+const d1 = new THREE.DirectionalLight(0xffffff, 1.0); d1.position.set(1,1,1); scene.add(d1);
+const d2 = new THREE.DirectionalLight(0xffffff, 0.5); d2.position.set(-1,-1,0.5); scene.add(d2);
+
+const loader = new OBJLoader();
+
+window.captureViews = async function(objUrl, views, boneName, markers) {
+    const obj = await loader.loadAsync(objUrl);
+    obj.traverse(c => {
+        if (c.isMesh) {
+            c.material = new THREE.MeshStandardMaterial({ color: 0xe8dcc8, roughness: 0.55, metalness: 0.05, side: THREE.DoubleSide });
+        }
+    });
+    scene.add(obj);
+    const box = new THREE.Box3().setFromObject(obj);
+    const center = box.getCenter(new THREE.Vector3());
+    obj.position.sub(center);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z);
+
+    // Znaczniki (kulki) w podanych wspolrzednych SWIATA PRZED wysrodkowaniem -
+    // wiec odejmujemy ten sam `center`, zeby lezaly poprawnie wzgledem obiektu.
+    if (markers) {
+        for (const [name, pos] of Object.entries(markers)) {
+            const sphere = new THREE.Mesh(
+                new THREE.SphereGeometry(maxDim * 0.025, 16, 16),
+                new THREE.MeshBasicMaterial({ color: name.includes("tuberosity") ? 0xff3b3b : 0x3bb3ff })
+            );
+            sphere.position.set(pos[0] - center.x, pos[1] - center.y, pos[2] - center.z);
+            scene.add(sphere);
+        }
+    }
+
+    window.__renderInfo = { maxDim, boxSizeBeforeCenter: size.toArray() };
+    window.__renderedObj = obj;
+    window.__renderedCamera = camera;
+
+    const results = {};
+    for (const [name, dir] of Object.entries(views)) {
+        camera.position.set(dir[0]*maxDim*1.6, dir[1]*maxDim*1.6, dir[2]*maxDim*1.6);
+        camera.lookAt(0,0,0);
+        camera.updateProjectionMatrix();
+        renderer.render(scene, camera);
+        results[name] = renderer.domElement.toDataURL("image/png");
+    }
+    document.getElementById("status").textContent = "DONE:" + boneName;
+    window.__captures = results;
+    return results;
+};
+</script>
+</body></html>

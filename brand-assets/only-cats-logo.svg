@@ -1,0 +1,29 @@
+<svg viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Only Cats">
+  <defs>
+    <clipPath id="oc-circle-clip2">
+      <circle cx="100" cy="100" r="100"/>
+    </clipPath>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Lato:wght@700&amp;display=swap');
+      .oc-wordmark { font-family: 'Lato', 'Segoe UI', Arial, sans-serif; font-weight: 700; }
+    </style>
+  </defs>
+  <g clip-path="url(#oc-circle-clip2)">
+    <rect x="0" y="0" width="200" height="200" fill="#00aff0"/>
+    <path d="M100 100 L193.97 134.2 A100 100 0 0 1 6.03 134.2 Z" fill="#008ccf"/>
+  </g>
+  <g fill="#ffffff">
+    <path d="M100 60
+             C126 60 148 82 148 110
+             C148 136 128 156 100 156
+             C72 156 52 136 52 110
+             C52 82 74 60 100 60 Z"/>
+    <path d="M62 100 L48 46 L92 78 Z"/>
+    <path d="M138 100 L152 46 L108 78 Z"/>
+  </g>
+  <path d="M69.19 103.08 A14.4 13.68 0 0 1 96.25 103.08" fill="none" stroke="#008ccf" stroke-width="6" stroke-linecap="round"/>
+  <path d="M103.75 103.08 A14.4 13.68 0 0 1 130.81 103.08" fill="none" stroke="#008ccf" stroke-width="6" stroke-linecap="round"/>
+  <path d="M94.72 121.44 L105.28 121.44 L100 132 Z" fill="#ff8fc7"/>
+
+  <text x="236" y="140" class="oc-wordmark" font-size="118" fill="#00aff0">Only<tspan fill="#008ccf">Cats</tspan></text>
+</svg>

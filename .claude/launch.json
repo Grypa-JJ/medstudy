@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "static-server",
+      "runtimeExecutable": "C:/Python311/python",
+      "runtimeArgs": ["-m", "http.server", "8934"],
+      "port": 8934
+    },
+    {
+      "name": "static-server-test",
+      "runtimeExecutable": "C:/Python311/python",
+      "runtimeArgs": ["-m", "http.server", "8940"],
+      "port": 8940
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>🌀 Labirynt</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.14.2/matter.min.js"></script>
+<style>
+    html, body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: #1b1f27;
+        font-family: Arial, sans-serif;
+        touch-action: none;
+    }
+
+    #maze-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .hud {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 2;
+        color: #ecf0f1;
+        background: rgba(0,0,0,.45);
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .hidden {
+        display: none !important;
+    }
+
+    .winner {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        position: absolute;
+        z-index: 3;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 100vw;
+        background: rgba(0,0,0,.55);
+    }
+
+    .winner h1 {
+        color: white;
+        font-size: 36px;
+        text-align: center;
+        margin: 0;
+        text-shadow: 2px 2px 6px rgba(0,0,0,.6);
+    }
+
+    .winner button {
+        padding: 12px 22px;
+        font-size: 16px;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+    #mazeReplayBtn {
+        background: #2ecc71;
+        color: white;
+    }
+
+    #mazeCloseBtn {
+        background: #e74c3c;
+        color: white;
+    }
+
+    /* ===== Wirtualny D-pad (tylko dotykowe ekrany) ===== */
+    .touch-controls {
+        display: none;
+        position: absolute;
+        bottom: 18px;
+        right: 18px;
+        z-index: 4;
+        grid-template-columns: 56px 56px 56px;
+        grid-template-rows: 56px 56px;
+        grid-template-areas:
+            ".    up    ."
+            "left down right";
+        gap: 6px;
+        touch-action: none;
+    }
+
+    @media (pointer: coarse) {
+        .touch-controls {
+            display: grid;
+        }
+    }
+
+    .touch-controls button {
+        width: 56px;
+        height: 56px;
+        border: none;
+        border-radius: 12px;
+        background: rgba(236,240,241,.85);
+        color: #1b1f27;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,.4);
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+    }
+
+    .touch-controls button:active {
+        background: rgba(255,255,255,1);
+        transform: scale(0.92);
+    }
+
+    .tc-up    { grid-area: up; }
+    .tc-left  { grid-area: left; }
+    .tc-down  { grid-area: down; }
+    .tc-right { grid-area: right; }
+</style>
+</head>
+<body>
+
+<div class="hud">🎮 WASD / strzałki (lub przyciski na ekranie) – dotrzyj kulką 🔴 do zielonego pola 🟩</div>
+
+<div id="maze-container"></div>
+
+<div class="touch-controls" id="touchControls">
+    <button class="tc-up" data-dir="up">⬆️</button>
+    <button class="tc-left" data-dir="left">⬅️</button>
+    <button class="tc-down" data-dir="down">⬇️</button>
+    <button class="tc-right" data-dir="right">➡️</button>
+</div>
+
+<div class="winner hidden">
+    <h1>Wygrałeś Mordooooo!!!!!!</h1>
+    <div>
+        <button id="mazeReplayBtn">🔁 Zagraj ponownie</button>
+        <button id="mazeCloseBtn">✖ Zamknij okno</button>
+    </div>
+</div>
+
+<script src="maze.js"></script>
+</body>
+</html>
