@@ -5756,6 +5756,39 @@ function renderYearRow() {
         : `Rok studiów nieustawiony <a href="#" onclick="promptChangeYear(event)" style="color:#673AB7;">(ustaw)</a>`;
 }
 
+// Widget "najbliższe kolokwia ze wszystkich przedmiotów naraz" - dane liczone
+// server-side przez Edge Function `today-plan` (agreguje po WSZYSTKICH
+// study_units usera jednym zapytaniem), nie lokalnym getUpcomingExam() (który
+// liczy tylko dla JEDNEGO przedmiotu na raz - używany osobno w karcie
+// "Dzisiejsza sesja"). Wywoływane raz przy otwarciu profilu (patrz
+// openProfile), nie przy każdym renderProfileSummary - to zapytanie sieciowe,
+// niepotrzebne przy każdym drobnym odświeżeniu profilu (np. zmianie awatara).
+async function renderUpcomingExamsWidget() {
+    const el = document.getElementById("profileExamsWidget");
+    if (!el) return;
+    el.innerHTML = `<div style="font-size:12.5px;color:#999;">⏳ Wczytywanie najbliższych kolokwiów…</div>`;
+    try {
+        const { data, error } = await sb.functions.invoke("today-plan");
+        if (error) throw error;
+        const exams = (data.upcomingExams || []).slice().sort((a, b) => a.daysLeft - b.daysLeft);
+        if (!exams.length) { el.innerHTML = ""; return; }
+
+        const rows = exams.slice(0, 3).map(function(e) {
+            const meta = SUBJECT_META[e.subject_key] || { icon: "📘", name: e.subject_key };
+            const urgent = e.daysLeft <= 10;
+            return `<div style="font-size:12.5px;color:${urgent ? "#c0392b" : "#555"};">
+                ${meta.icon} ${meta.name}: kolokwium za ${e.daysLeft} ${e.daysLeft === 1 ? "dzień" : "dni"} (${e.exam_on})
+            </div>`;
+        }).join("");
+        el.innerHTML = `<div style="font-weight:700;color:#1a237e;font-size:13px;margin-bottom:4px;">⏳ Najbliższe kolokwia</div>${rows}`;
+    } catch (err) {
+        // Nie-fatalne: brak danych planu (tabele puste/nieuruchomione) albo
+        // funkcja jeszcze nie wdrożona - profil ma działać dalej bez tego widgetu.
+        console.warn("Nie udało się wczytać najbliższych kolokwiów:", err.message);
+        el.innerHTML = "";
+    }
+}
+
 async function promptChangeYear(e) {
     e.preventDefault();
     const current = (currentProfile && currentProfile.year) || "";
@@ -6093,6 +6126,7 @@ function renderBadgesList() {
 function openProfile() {
     renderProfileSummary();
     renderHeatmap();
+    renderUpcomingExamsWidget();
     document.getElementById("profileModal").style.display = "flex";
     // Przewiń heatmapę na sam koniec (najnowsze dni), tak jak na GitHubie
     setTimeout(() => {
@@ -6810,6 +6844,8 @@ function startApp() {
                 <div id="profileGroupRow" style="font-size:13px;color:#555;margin-top:2px;"></div>
             </div>
         </div>
+
+        <div id="profileExamsWidget" style="margin:0 0 16px;"></div>
 
         <!-- Panel wyboru awatara + obwódki (chowany, otwierany kliknięciem na awatar) -->
         <div id="avatarPickerPanel" style="display:none;margin:0 0 16px;padding:14px;background:#f5f3fc;border:1.5px solid #e0d9f5;border-radius:12px;">

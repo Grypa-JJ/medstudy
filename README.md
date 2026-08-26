@@ -14,6 +14,7 @@ To repozytorium zawiera **kod aplikacji i pipeline'y generujące treść**. Same
 - **Tryb offline (PWA)** — service worker cache'ujący powłokę aplikacji, instalowalna jako aplikacja (manifest).
 - **Atlas anatomiczny 3D** (`atlas_pilot.html`) — Three.js, siatki BodyParts3D, automatyczne wykrywanie punktów anatomicznych (landmarków) na kościach, retargeting animacji motion-capture (BVH) na model 3D. Moduł eksperymentalny, w rozwoju.
 - **Autoryzacja** — logowanie, potwierdzenie e-mail, reset hasła (Supabase Auth + RLS).
+- **Edge Function** (`supabase/functions/today-plan`, Deno/TypeScript) — agreguje najbliższe kolokwia ze wszystkich przedmiotów usera jednym zapytaniem po stronie serwera, zasila widget w profilu.
 
 ## Stos technologiczny
 

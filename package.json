@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Grypa-JJ/medstudy#readme",
   "devDependencies": {
+    "supabase": "^2.115.0",
     "vitest": "^4.1.11"
   }
 }

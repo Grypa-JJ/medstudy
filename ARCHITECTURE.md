@@ -51,6 +51,14 @@ Materiały źródłowe (PDF-y skryptów, talie Anki `.apkg`, dumpy CSV/DOCX z se
 
 `apkg_to_json.py` obsługuje oba formaty plików Anki (stary SQLite `.anki2`/`.anki21` i nowy skompresowany `.anki21b`), bo różne talie w tym projekcie pochodzą z różnych wersji Anki.
 
-## 5. Atlas anatomiczny 3D — eksperymentalny
+## 5. Edge Function: `today-plan`
+
+Jedyny kawałek logiki wykonywany faktycznie po stronie serwera (Deno/TypeScript, `supabase/functions/today-plan/`), nie tylko za RLS. Liczy "najbliższe kolokwia ze wszystkich przedmiotów naraz" — agregację po WSZYSTKICH `study_units` usera jednym zapytaniem, z uwzględnieniem jego `group_number` z `profiles`. Zasila mały widget w profilu (`renderUpcomingExamsWidget()` w `index.html`).
+
+Świadomie NIE zastępuje karty "📅 Dzisiejsza sesja" (`renderTodaySession()`), która zostaje w pełni client-side — ta karta ma podgląd dowolnej daty (przeliczany natychmiast, bez zapytania sieciowego) i złożony flow "zamknij tydzień → wyślij do fiszek"; podmiana jej rdzenia na wywołanie sieciowe zwiększyłaby ryzyko regresji bez realnej korzyści dla użytkownika. `today-plan` dostaje więc osobne, węższe zadanie, które faktycznie potrzebuje serwera (agregacja cross-subject w jednym zapytaniu) zamiast dublować już działającą logikę.
+
+Autoryzacja: klient wywołuje przez `sb.functions.invoke()`, który dokleja token zalogowanego usera; funkcja tworzy klienta Supabase z tym samym tokenem (nie service role), więc RLS działa identycznie jak przy zwykłych zapytaniach z frontu — zero dodatkowych uprawnień ponad to, co user i tak widzi. Platforma Supabase dodatkowo odrzuca (401) każde zapytanie bez nagłówka autoryzacji, zanim dotrze do kodu funkcji.
+
+## 6. Atlas anatomiczny 3D — eksperymentalny
 
 `atlas_pilot.html` (Three.js) renderuje siatki BodyParts3D i pozwala eksplorować struktury kostne w 3D, z automatycznie wykrywanymi punktami anatomicznymi (landmarkami) i retargetingiem animacji motion-capture (BVH) na model. To najmłodszy, wciąż rozwijany moduł projektu — dane wejściowe (mesh, landmarki) celowo nie są w tym repo (patrz `.gitignore`), bo to dane badawcze/wygenerowane, nie kod.
