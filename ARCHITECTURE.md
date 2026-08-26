@@ -6,7 +6,7 @@ Szczegółowy opis tego, jak elementy aplikacji się ze sobą łączą i dlaczeg
 
 Pytania są rozbite na dwie części, z różnym poziomem ochrony:
 
-- **`meta.json`** (jawny plik na Netlify) — metadane: `id`, `subject`, `category`, `tier`, oraz **obrazek** (`img`, base64, do ~700KB/pytanie). Zdjęcie samo w sobie nie jest kluczem odpowiedzi, więc nie musi być chronione.
+- **`meta.json`** (jawny plik na Netlify) — metadane: `id`, `subject`, `category`, `tier`, oraz **URL obrazka** (`img`, wskazujący na publiczny bucket Cloudflare R2 — zdjęcia same w sobie nie są przechowywane w tym pliku, tylko linkowane). Zdjęcie samo w sobie nie jest kluczem odpowiedzi, więc nie musi być chronione tak jak treść pytania.
 - **Tabela `questions` w Supabase** (chroniona RLS, patrz `supabase_schema_questions.sql`) — właściwa treść: `q` (pytanie), `o` (opcje), `a` (indeks poprawnej), `rationale` (wytłumaczenie). Dostępna tylko dla zalogowanych użytkowników.
 
 `content.js` dogrywa treść z Supabase leniwie — dopiero gdy użytkownik faktycznie otworzy dany zestaw pytań, nie przy starcie aplikacji. Frontend (`index.html`) startuje więc z "lekkimi" rekordami z `meta.json`, a `ensureContentLoaded()` uzupełnia je w miejscu.

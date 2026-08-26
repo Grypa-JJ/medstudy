@@ -10,7 +10,9 @@ To repozytorium zawiera **kod aplikacji i pipeline'y generujące treść**. Same
 - **Fiszki (Leitner)** — kolejka powtórek oparta o system pudełek Leitnera, z osobną kolejką błędnych odpowiedzi.
 - **Cykl nauki** — tygodniowy plan powtórek zsynchronizowany między urządzeniami (`cycle_progress` w Supabase).
 - **Profil użytkownika** — awatary, statystyki, agregacja wyników per rok studiów.
-- **Atlas anatomiczny 3D** (`atlas_pilot.html`) — Three.js, siatki BodyParts3D, automatyczne wykrywanie punktów anatomicznych (landmarków) na kościach, retargeting animacji motion-capture (BVH) na model 3D.
+- **Dashboard statystyk** (`dashboard.html`) — wykresy skuteczności w czasie i najsłabszych kategorii, liczone client-side z danych `progress`/`activity`.
+- **Tryb offline (PWA)** — service worker cache'ujący powłokę aplikacji, instalowalna jako aplikacja (manifest).
+- **Atlas anatomiczny 3D** (`atlas_pilot.html`) — Three.js, siatki BodyParts3D, automatyczne wykrywanie punktów anatomicznych (landmarków) na kościach, retargeting animacji motion-capture (BVH) na model 3D. Moduł eksperymentalny, w rozwoju.
 - **Autoryzacja** — logowanie, potwierdzenie e-mail, reset hasła (Supabase Auth + RLS).
 
 ## Stos technologiczny
@@ -65,6 +67,8 @@ flowchart LR
 
 ```
 index.html                 punkt wejścia aplikacji (quiz/fiszki/profil)
+dashboard.html              statystyki nauki (wykresy)
+stats.js                    czyste funkcje liczące statystyki (testowalne bez przeglądarki)
 atlas_pilot.html           atlas anatomiczny 3D
 auth.js, storage.js,       logika frontendowa (autoryzacja, zapisywanie
 study_plan.js, ...         stanu, plan nauki, walidacja)
@@ -72,18 +76,29 @@ content.js                 leniwe ładowanie treści pytań z Supabase (RLS)
 supabase-client.js,        konfiguracja klienta Supabase (klucz "anon" —
 supabase-config.js         bezpieczny publicznie, ochronę daje RLS w bazie)
 supabase_schema_*.sql      schematy bazy danych (tabele, RLS, triggery)
+manifest.json, sw.js        PWA: instalowalność + tryb offline (cache app shell)
+tests/                       testy jednostkowe (Vitest) dla id-utils/validator/stats
 _build_*.py, _landmark_*.mjs   pipeline generowania/etykietowania danych
                                 atlasu 3D (kości, punkty anatomiczne)
 *_build*.py, *_build*.mjs      pipeline konwersji materiałów źródłowych
                                 (PDF/Anki/CSV) na strukturę pytań
 ```
 
+## Testy
+
+```bash
+npm install
+npm test
+```
+
+Testy jednostkowe (Vitest) pokrywają czyste funkcje bez zależności od przeglądarki/Supabase: deterministyczne ID pytań (`id-utils.js`), walidację bazy pytań (`validator.js`) i liczenie statystyk do dashboardu (`stats.js`).
+
 ## Co celowo nie jest w repo
 
 Pełny szczegół w `.gitignore`, w skrócie:
 
 - **Materiały źródłowe** (PDF-y podręczników, talie Anki, nagrania audio) — prawa autorskie należą do wydawców/autorów.
-- **Wygenerowana baza pytań** (`meta.json`, `questions.json` i pochodne) — zawiera m.in. zeskanowane ryciny z atlasów anatomicznych jako obrazy, które nie są moim utworem i nie mogę ich publikować. Sama baza pytań jest też częścią działającej aplikacji dla studentów, nie materiałem promocyjnym.
+- **Wygenerowana baza pytań** (`meta.json`, `questions.json` i pochodne) — linkuje m.in. zeskanowane ryciny z atlasów anatomicznych (hostowane osobno), które nie są moim utworem i nie mogę ich publikować. Sama baza pytań jest też częścią działającej aplikacji dla studentów, nie materiałem promocyjnym.
 - **Duplikaty wdrożeniowe** (`netlify_deploy/`) — zwierciadło plików z roota używane tylko do deployu.
 
 ## Uwaga o procesie pracy

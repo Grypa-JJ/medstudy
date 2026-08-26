@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Statystyki nauki — Kocia Baza Wiedzy</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4CAF50">
+<link rel="icon" href="brand-assets/favicon-32.png" sizes="32x32">
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f5f5;
+    color: #222;
+}
+.back-link{
+    display: inline-block;
+    margin-bottom: 16px;
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: bold;
+}
+.back-link:hover{ text-decoration: underline; }
+h1{ margin-top: 0; }
+.summary-row{
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+.summary-card{
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    flex: 1 1 160px;
+}
+.summary-card .label{ font-size: 0.85em; color: #666; }
+.summary-card .value{ font-size: 1.6em; font-weight: bold; color: #4CAF50; }
+.chart-card{
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    margin-bottom: 24px;
+}
+.chart-card h2{ margin-top: 0; font-size: 1.1em; }
+.chart-card p.note{ color: #777; font-size: 0.85em; margin-top: 8px; }
+#state-message{ color: #666; }
+#state-message.error{ color: #c0392b; }
+canvas{ max-width: 100%; }
+</style>
+</head>
+
+<body>
+
+<a class="back-link" href="index.html">← powrót do quizu</a>
+<h1>📊 Statystyki nauki</h1>
+
+<div id="state-message">Wczytywanie…</div>
+<div id="dashboard-content" style="display:none;">
+    <div class="summary-row">
+        <div class="summary-card">
+            <div class="label">Odpowiedziane pytania</div>
+            <div class="value" id="summaryTotal">0</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">Ogólna skuteczność</div>
+            <div class="value" id="summaryAccuracy">0%</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">Dni z aktywnością</div>
+            <div class="value" id="summaryActiveDays">0</div>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <h2>Skuteczność dziennie (ostatnie 30 dni z aktywnością)</h2>
+        <canvas id="chartAccuracy" height="90"></canvas>
+        <p class="note">Dzień = data ostatniej odpowiedzi na dane pytanie. Ponowna odpowiedź nadpisuje poprzednią, więc wykres pokazuje aktualny stan wiedzy w danym dniu, nie pełną historię prób.</p>
+    </div>
+
+    <div class="chart-card">
+        <h2>Najsłabsze kategorie</h2>
+        <canvas id="chartWeakCategories" height="140"></canvas>
+        <p class="note">Tylko kategorie z co najmniej 5 odpowiedziami (żeby pojedyncza pomyłka nie zaburzała statystyki).</p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script src="supabase-config.js"></script>
+<script src="supabase-client.js"></script>
+<script src="storage.js"></script>
+<script src="stats.js"></script>
+<script>
+const MIN_CATEGORY_SAMPLES = 5;
+const MAX_DAYS_SHOWN = 30;
+
+function setState(msg, isError) {
+    const el = document.getElementById("state-message");
+    el.textContent = msg;
+    el.className = isError ? "error" : "";
+}
+
+function renderSummary(progressRows, activityRows) {
+    const { total, accuracyPct, activeDays } = computeSummary(progressRows, activityRows);
+
+    document.getElementById("summaryTotal").textContent = total;
+    document.getElementById("summaryAccuracy").textContent = accuracyPct + "%";
+    document.getElementById("summaryActiveDays").textContent = activeDays;
+}
+
+function renderAccuracyOverTime(progressRows) {
+    const { days, accuracyPct } = computeAccuracyByDay(progressRows, MAX_DAYS_SHOWN);
+
+    new Chart(document.getElementById("chartAccuracy"), {
+        type: "line",
+        data: {
+            labels: days,
+            datasets: [{
+                label: "Skuteczność (%)",
+                data: accuracyPct,
+                borderColor: "#4CAF50",
+                backgroundColor: "rgba(76, 175, 80, 0.15)",
+                tension: 0.2,
+                fill: true,
+            }],
+        },
+        options: {
+            scales: { y: { min: 0, max: 100 } },
+            plugins: { legend: { display: false } },
+        },
+    });
+}
+
+function renderWeakCategories(progressRows, idToCategory) {
+    const rows = computeWeakCategories(progressRows, idToCategory, MIN_CATEGORY_SAMPLES, 10);
+
+    new Chart(document.getElementById("chartWeakCategories"), {
+        type: "bar",
+        data: {
+            labels: rows.map(r => `${r.category} (${r.total})`),
+            datasets: [{
+                label: "Skuteczność (%)",
+                data: rows.map(r => r.accuracy),
+                backgroundColor: rows.map(r => r.accuracy < 50 ? "#e57373" : "#ffb74d"),
+            }],
+        },
+        options: {
+            indexAxis: "y",
+            scales: { x: { min: 0, max: 100 } },
+            plugins: { legend: { display: false } },
+        },
+    });
+}
+
+async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+        setState("Musisz być zalogowany, żeby zobaczyć statystyki. Przekierowuję…");
+        setTimeout(() => { location.href = "index.html"; }, 1200);
+        return;
+    }
+
+    try {
+        const [progressRows, activityRows, metaData] = await Promise.all([
+            loadProgressRows(),
+            loadActivityRows(),
+            fetch("meta.json").then(r => {
+                if (!r.ok) throw new Error("HTTP " + r.status);
+                return r.json();
+            }),
+        ]);
+
+        const idToCategory = new Map();
+        for (const q of metaData.questions) idToCategory.set(q.id, q.category);
+
+        if (!progressRows.length) {
+            setState("Brak jeszcze żadnych odpowiedzi — statystyki pojawią się po pierwszych powtórkach.");
+            return;
+        }
+
+        document.getElementById("state-message").style.display = "none";
+        document.getElementById("dashboard-content").style.display = "block";
+
+        renderSummary(progressRows, activityRows);
+        renderAccuracyOverTime(progressRows);
+        renderWeakCategories(progressRows, idToCategory);
+    } catch (err) {
+        console.error(err);
+        setState("Nie udało się wczytać statystyk: " + err.message, true);
+    }
+}
+
+init();
+</script>
+</body>
+</html>

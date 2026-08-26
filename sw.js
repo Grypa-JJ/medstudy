@@ -7,11 +7,12 @@
 //
 // Numer w CACHE_NAME podbij przy każdej zmianie listy APP_SHELL, żeby stare
 // urządzenia dostały nowy zestaw plików zamiast trzymać się starego cache'a.
-const CACHE_NAME = "medstudy-shell-v1";
+const CACHE_NAME = "medstudy-shell-v2";
 
 const APP_SHELL = [
     "./",
     "./index.html",
+    "./dashboard.html",
     "./manifest.json",
     "./supabase-config.js",
     "./supabase-client.js",
