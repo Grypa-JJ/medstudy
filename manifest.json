@@ -1,0 +1,15 @@
+{
+  "name": "Kocia Baza Wiedzy",
+  "short_name": "Kocia BW",
+  "description": "Bank pytań, fiszki i plan nauki do egzaminów na studiach medycznych.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f5f5",
+  "theme_color": "#4CAF50",
+  "lang": "pl",
+  "icons": [
+    { "src": "brand-assets/favicon-64.png", "sizes": "64x64", "type": "image/png" },
+    { "src": "brand-assets/favicon-180.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

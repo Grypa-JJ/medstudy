@@ -1,0 +1,23 @@
+{
+  "name": "medstudy",
+  "version": "1.0.0",
+  "description": "Aplikacja webowa do nauki i powtórek do egzaminów na studiach medycznych — bank pytań (tryb testowy i tryb wpisywania odpowiedzi), fiszki z systemem powtórek Leitnera, tryb \"trudne pytania\", interaktywny atlas anatomiczny 3D oraz profil użytkownika z synchronizacją postępów między urządzeniami.",
+  "main": "auth.js",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Grypa-JJ/medstudy.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Grypa-JJ/medstudy/issues"
+  },
+  "homepage": "https://github.com/Grypa-JJ/medstudy#readme",
+  "devDependencies": {
+    "vitest": "^4.1.11"
+  }
+}

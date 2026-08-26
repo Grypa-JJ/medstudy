@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kocia Baza Wiedzy</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4CAF50">
+<link rel="icon" href="brand-assets/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="brand-assets/favicon-180.png">
 
 <style>
 body{
@@ -2229,6 +2233,19 @@ body.dark-mode .notes-body h3{ color:#c5cae9; }
 <script src="content.js?v=1"></script>
 <script src="study_plan.js?v=3"></script>
 <script src="validator.js?v=2"></script>
+<script>
+// Rejestracja service workera (tryb offline) - nieblokujące, po pełnym
+// załadowaniu strony. Brak wsparcia (stare przeglądarki, tryb prywatny
+// niektórych przeglądarek) nie przerywa działania appki - po prostu nie
+// będzie działać offline.
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("sw.js").catch((err) =>
+            console.warn("Rejestracja service workera nie powiodła się:", err)
+        );
+    });
+}
+</script>
 <script>
 const BATCH_SIZE = 1000;
 let currentSubject = null; // wybrany na ekranie kafelków przedmiotów
