@@ -12,7 +12,7 @@ To repozytorium zawiera **kod aplikacji i pipeline'y generujące treść**. Same
 - **Profil użytkownika** — awatary, statystyki, agregacja wyników per rok studiów.
 - **Dashboard statystyk** (`dashboard.html`) — wykresy skuteczności w czasie i najsłabszych kategorii, liczone client-side z danych `progress`/`activity`.
 - **Tryb offline (PWA)** — service worker cache'ujący powłokę aplikacji, instalowalna jako aplikacja (manifest).
-- **Atlas anatomiczny 3D** (`atlas_pilot.html`) — Three.js, siatki BodyParts3D, automatyczne wykrywanie punktów anatomicznych (landmarków) na kościach, retargeting animacji motion-capture (BVH) na model 3D. Moduł eksperymentalny, w rozwoju.
+- **Atlas anatomiczny 3D** (`atlas.html` → `_atlas_v2/build_full/atlas_pilot_v3.html`) — Three.js, pełny model Z-Anatomy (CC BY-SA, ~2800 struktur w 9 warstwach: szkielet, mięśnie, naczynia, nerwy, mózg, narządy, zęby, tkanka łączna, układ chłonny), ładowany po jednym Draco-GLB na warstwę z Cloudflare R2. Punkty orientacyjne na powierzchni struktury, szpilki kolokwiów, przekrój, skalpel, tryb quizu, ruchome panele. Osobna przeglądarka narządów (`_organ_compare/`) porównuje 3 źródła (Z-Anatomy / CT pacjenta / NIH). Pipeline ekstrakcji z `.blend` (headless Blender) i pakowania w `_atlas_v2/`. Poprzednia wersja na siatkach BodyParts3D: `atlas_pilot.html` (zostaje lokalnie, niewdrażana).
 - **Autoryzacja** — logowanie, potwierdzenie e-mail, reset hasła (Supabase Auth + RLS).
 - **Edge Function** (`supabase/functions/today-plan`, Deno/TypeScript) — agreguje najbliższe kolokwia ze wszystkich przedmiotów usera jednym zapytaniem po stronie serwera, zasila widget w profilu.
 

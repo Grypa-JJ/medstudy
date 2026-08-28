@@ -3210,6 +3210,21 @@ function renderCategoryPickerScreen() {
     const grid = document.getElementById("categoryTiles");
     grid.innerHTML = "";
 
+    // Anatomia: kafelek prowadzący do atlasu 3D (osobna aplikacja, model Z-Anatomy).
+    if (currentSubject === "anatomia" && categoryScreenTheme === null) {
+        const atlasTile = document.createElement("a");
+        atlasTile.className = "subject-tile";
+        atlasTile.href = "atlas.html";
+        atlasTile.style.cssText = "text-decoration:none;background:linear-gradient(160deg,#2a2550,#1a2740);color:#e9edf2;";
+        atlasTile.innerHTML = `
+            <div class="subject-icon">🧍</div>
+            <div class="subject-name" style="text-transform:none;color:#fff;">Atlas 3D</div>
+            <div class="subject-year" style="color:#9aa4b4;">szkielet · mięśnie · naczynia · nerwy · narządy</div>
+            <div class="subject-stats" style="color:#b6bfce;">punkty orientacyjne, szpilki kolokwiów, przekrój, quiz</div>
+        `;
+        grid.appendChild(atlasTile);
+    }
+
     const showingThemeLevel = !!themeOrder && categoryScreenTheme === null;
 
     if (showingThemeLevel) {
