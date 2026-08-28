@@ -12,6 +12,54 @@
       "runtimeExecutable": "C:/Python311/python",
       "runtimeArgs": ["-m", "http.server", "8940"],
       "port": 8940
+    },
+    {
+      "name": "static-server-fresh",
+      "runtimeExecutable": "C:/Python311/python",
+      "runtimeArgs": ["-m", "http.server", "8951"],
+      "port": 8951
+    },
+    {
+      "name": "static-server-claude2",
+      "runtimeExecutable": "C:/Python311/python",
+      "runtimeArgs": ["-m", "http.server", "8962"],
+      "port": 8962
+    },
+    {
+      "name": "static-server-claude3",
+      "runtimeExecutable": "C:/Python311/python",
+      "runtimeArgs": ["-m", "http.server", "8973"],
+      "port": 8973
+    },
+    {
+      "name": "static-server-claude4",
+      "runtimeExecutable": "C:/Python311/python",
+      "runtimeArgs": ["-m", "http.server", "8984"],
+      "port": 8984
+    },
+    {
+      "name": "static-server-claude5",
+      "runtimeExecutable": "C:/Python311/python",
+      "runtimeArgs": ["-m", "http.server", "8995"],
+      "port": 8995
+    },
+    {
+      "name": "static-server-claude6",
+      "runtimeExecutable": "C:/Python311/python",
+      "runtimeArgs": ["-m", "http.server", "9006"],
+      "port": 9006
+    },
+    {
+      "name": "static-server-claude7",
+      "runtimeExecutable": "C:/Python311/python",
+      "runtimeArgs": ["-m", "http.server", "9017"],
+      "port": 9017
+    },
+    {
+      "name": "atlas-v2-pilot",
+      "runtimeExecutable": "C:/Python311/python",
+      "runtimeArgs": ["-m", "http.server", "9028"],
+      "port": 9028
     }
   ]
 }

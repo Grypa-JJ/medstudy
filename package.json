@@ -20,5 +20,8 @@
   "devDependencies": {
     "supabase": "^2.115.0",
     "vitest": "^4.1.11"
+  },
+  "dependencies": {
+    "fbx2gltf": "^0.9.7-p1"
   }
 }
