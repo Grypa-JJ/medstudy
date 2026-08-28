@@ -3135,9 +3135,13 @@ function changeBatch() {
 // w obrębie wybranego tematu. Dla pozostałych przedmiotów (bez themeOrder)
 // od razu pokazuje płaską siatkę kafelków partii.
 let categoryScreenTheme = null; // wybrany temat na ekranie kategorii, albo null (poziom tematów / brak tematów)
+// Anatomia ma dodatkowy poziom nad kategoriami: [Pytania teoretyczne] / [Atlas 3D].
+// null = pokaż wybór; "questions" = normalny ekran kategorii; "atlas" -> atlas.html.
+let anatomiaSection = null;
 
 function showCategoryPicker() {
     categoryScreenTheme = null;
+    anatomiaSection = null; // wróć do wyboru: pytania teoretyczne / atlas
     document.getElementById("mainStudyUI").style.display = "none";
     document.getElementById("categoryPickerScreen").style.display = "";
     renderCategoryPickerScreen();
@@ -3209,21 +3213,44 @@ function renderCategoryPickerScreen() {
     const backRow = document.getElementById("themeBackRow");
     const grid = document.getElementById("categoryTiles");
     grid.innerHTML = "";
+    const fallbackWrap = document.querySelector(".category-fallback-wrap");
 
-    // Anatomia: kafelek prowadzący do atlasu 3D (osobna aplikacja, model Z-Anatomy).
-    if (currentSubject === "anatomia" && categoryScreenTheme === null) {
-        const atlasTile = document.createElement("a");
-        atlasTile.className = "subject-tile";
-        atlasTile.href = "atlas.html";
-        atlasTile.style.cssText = "text-decoration:none;background:linear-gradient(160deg,#2a2550,#1a2740);color:#e9edf2;";
-        atlasTile.innerHTML = `
+    // Anatomia: poziom wyboru sekcji — pytania teoretyczne vs atlas 3D.
+    if (currentSubject === "anatomia" && anatomiaSection === null && categoryScreenTheme === null) {
+        titleEl.textContent = "🦴 Anatomia — wybierz";
+        backRow.style.display = "none";
+        if (fallbackWrap) fallbackWrap.style.display = "none";
+
+        const qStats = stats;
+        let qTotal = 0, qAns = 0;
+        qStats.forEach(s => { qTotal += s.total; qAns += s.answered; });
+
+        const tQ = document.createElement("button");
+        tQ.className = "subject-tile";
+        tQ.onclick = () => { anatomiaSection = "questions"; renderCategoryPickerScreen(); window.scrollTo(0, 0); };
+        tQ.innerHTML = `
+            <div class="subject-icon">📚</div>
+            <div class="subject-name" style="text-transform:none;">Pytania teoretyczne</div>
+            <div class="subject-year">${qStats.size} kategori${qStats.size === 1 ? "a" : (qStats.size < 5 ? "e" : "i")}</div>
+            <div class="subject-progress-bar"><div class="subject-progress-fill" style="width:${qTotal ? Math.round(qAns / qTotal * 100) : 0}%;"></div></div>
+            <div class="subject-stats">${qAns} / ${qTotal} pytań</div>
+        `;
+        grid.appendChild(tQ);
+
+        const tA = document.createElement("a");
+        tA.className = "subject-tile";
+        tA.href = "atlas.html";
+        tA.style.cssText = "text-decoration:none;background:linear-gradient(160deg,#2a2550,#1a2740);color:#e9edf2;";
+        tA.innerHTML = `
             <div class="subject-icon">🧍</div>
-            <div class="subject-name" style="text-transform:none;color:#fff;">Atlas 3D</div>
-            <div class="subject-year" style="color:#9aa4b4;">szkielet · mięśnie · naczynia · nerwy · narządy</div>
+            <div class="subject-name" style="text-transform:none;color:#fff;">Atlas anatomiczny 3D</div>
+            <div class="subject-year" style="color:#9aa4b4;">model Z-Anatomy · 9 warstw</div>
             <div class="subject-stats" style="color:#b6bfce;">punkty orientacyjne, szpilki kolokwiów, przekrój, quiz</div>
         `;
-        grid.appendChild(atlasTile);
+        grid.appendChild(tA);
+        return;
     }
+    if (fallbackWrap) fallbackWrap.style.display = "";
 
     const showingThemeLevel = !!themeOrder && categoryScreenTheme === null;
 
@@ -3282,6 +3309,15 @@ function renderCategoryPickerScreen() {
             `;
             grid.appendChild(btn);
         });
+    }
+
+    // W trybie "pytania teoretyczne" anatomii, na poziomie tematów/kategorii,
+    // przycisk powrotu do wyboru sekcji (pytania / atlas).
+    if (currentSubject === "anatomia" && anatomiaSection === "questions" && categoryScreenTheme === null) {
+        backRow.style.display = "";
+        backRow.innerHTML = '<button class="back-btn" style="display:inline-block;margin:0;" onclick="anatomiaSection=null;renderCategoryPickerScreen();window.scrollTo(0,0);">← Anatomia</button>';
+    } else if (backRow.innerHTML.includes("← Anatomia")) {
+        backRow.innerHTML = '<button class="back-btn" onclick="backToThemes()" style="display:inline-block;margin:0;">← Wszystkie tematy</button>';
     }
 
     populateCategoryFallbackSelect();
