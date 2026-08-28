@@ -7,7 +7,7 @@
 //
 // Numer w CACHE_NAME podbij przy każdej zmianie listy APP_SHELL, żeby stare
 // urządzenia dostały nowy zestaw plików zamiast trzymać się starego cache'a.
-const CACHE_NAME = "medstudy-shell-v2";
+const CACHE_NAME = "medstudy-shell-v3";
 
 const APP_SHELL = [
     "./",
@@ -76,15 +76,34 @@ function cacheFirst(request) {
     });
 }
 
+// Warstwy atlasu 3D (Draco-GLB) hostowane na Cloudflare R2 - inny origin, ale
+// pliki są NIEZMIENNE (nazwa = wersja), więc cache-first offline ma sens.
+const R2_ATLAS_HOST = "pub-75514e92552347ccbcdab6bfacd153fd.r2.dev";
+
 self.addEventListener("fetch", (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // Nigdy nie przechwytuj zapytań spoza własnej domeny (Supabase, CDN
-    // supabase-js) ani zapytań innych niż GET (POST/PATCH do bazy).
-    if (url.origin !== self.location.origin || request.method !== "GET") return;
+    if (request.method !== "GET") return;
+
+    // Geometria atlasu z R2 (cross-origin) - cache-first, niezmienna.
+    if (url.host === R2_ATLAS_HOST && url.pathname.startsWith("/atlas/")) {
+        event.respondWith(cacheFirst(request));
+        return;
+    }
+
+    // Nigdy nie przechwytuj innych zapytań spoza własnej domeny (Supabase, CDN).
+    if (url.origin !== self.location.origin) return;
 
     if (url.pathname.endsWith("/meta.json")) {
+        event.respondWith(staleWhileRevalidate(request));
+        return;
+    }
+
+    // Atlas 3D (HTML/JS/vendor/katalogi JSON) - stale-while-revalidate, żeby
+    // aktualizacja atlasu dotarła do użytkownika bez podbijania CACHE_NAME
+    // całej apki (atlas i baza pytań wydają się niezależnie).
+    if (/^\/(atlas\.html$|_atlas_v2\/|_organ_compare\/)/.test(url.pathname)) {
         event.respondWith(staleWhileRevalidate(request));
         return;
     }
