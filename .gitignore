@@ -81,6 +81,7 @@ sadowa_parsed.json
 
 # --- Foldery ze źródłami/materiałami (nie kod) ---
 netlify_deploy/
+atlas_standalone_deploy/
 _atlas_pilot/
 _bone_renders/
 r2_upload/
@@ -121,3 +122,6 @@ _packaging/**/*.keystore
 _packaging/atlas-assets.tar.gz
 _packaging/.atlas-assets.download*
 _packaging/dist-artifacts/
+
+# Local Netlify folder
+.netlify
